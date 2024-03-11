@@ -1569,8 +1569,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   pointPrefab: {fileID: 165447167197532696, guid: 469150d8068962e4f83253873466f02c, type: 3}
   pointParent: {fileID: 529415091}
+  line: {fileID: 4187783109043626852, guid: f5fc947b57f9b4876a4304b026460c97, type: 3}
   points: []
   filenameInput: {fileID: 1095175847}
+  isDirty: 0
 --- !u!4 &1070034476
 Transform:
   m_ObjectHideFlags: 0

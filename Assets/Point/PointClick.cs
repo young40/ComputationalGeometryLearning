@@ -1,7 +1,9 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using NUnit.Framework;
 using UnityEngine;
+using UnityEngine.Serialization;
 using UnityEngine.UI;
 
 public class PointClick : MonoBehaviour
@@ -13,6 +15,9 @@ public class PointClick : MonoBehaviour
     private GameObject pointParent;
 
     [SerializeField]
+    private LineRenderer linePrefab;
+
+    [SerializeField]
     private Vector2[] points;
 
     [SerializeField]
@@ -21,8 +26,12 @@ public class PointClick : MonoBehaviour
     [SerializeField]
     private bool isDirty = false;
 
+    private LineRenderer line;
+
     void Start()
     {
+        var go = Instantiate(linePrefab);
+        line = go.GetComponent<LineRenderer>();
     }
 
     void Update()
@@ -62,6 +71,7 @@ public class PointClick : MonoBehaviour
 
     private void UpdatePoints()
     {
+        List<Vector3> list3 = new List<Vector3>();
         List<Vector2> list = new List<Vector2>();
 
         for (int i = 0; i < pointParent.transform.childCount; i++)
@@ -69,9 +79,12 @@ public class PointClick : MonoBehaviour
             var pos = pointParent.transform.GetChild(i).position;
 
             list.Add(pos);
+            list3.Add(pos);
         }
 
         points = list.ToArray();
+        line.positionCount = list3.Count;
+        line.SetPositions(list3.ToArray());
     }
 
     public void SaveList()
