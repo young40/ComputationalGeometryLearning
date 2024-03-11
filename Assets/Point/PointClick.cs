@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.Serialization;
@@ -25,6 +26,9 @@ public class PointClick : MonoBehaviour
 
     [SerializeField]
     private bool isDirty = false;
+
+    [SerializeField]
+    private bool updateByClick = false;
 
     private LineRenderer line;
 
@@ -83,8 +87,15 @@ public class PointClick : MonoBehaviour
         }
 
         points = list.ToArray();
-        line.positionCount = list3.Count;
-        line.SetPositions(list3.ToArray());
+        if (updateByClick)
+        {
+            line.positionCount = list3.Count;
+            line.SetPositions(list3.ToArray());
+        }
+        else
+        {
+            UpdateLine(points.ToArray());
+        }
     }
 
     public void SaveList()
@@ -102,5 +113,10 @@ public class PointClick : MonoBehaviour
         Debug.Log(Application.persistentDataPath);
 
         File.WriteAllText(Path.Join(Application.persistentDataPath, filenameInput.text + ".json"), json);
+    }
+
+    private void UpdateLine(Vector2[] list)
+    {
+        
     }
 }
