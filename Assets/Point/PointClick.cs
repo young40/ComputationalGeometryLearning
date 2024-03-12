@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using NUnit.Framework;
 using UnityEngine;
+using UnityEngine.ParticleSystemJobs;
 using UnityEngine.Serialization;
 using UnityEngine.UI;
 
@@ -36,6 +37,25 @@ public class PointClick : MonoBehaviour
     {
         var go = Instantiate(linePrefab);
         line = go.GetComponent<LineRenderer>();
+
+        Vector2[] vector2s = new Vector2[]
+        {
+            new Vector2 (0,0),
+            new Vector2 (0,1),
+            new Vector2 (2,1),
+            new Vector2 (3,1),
+        };
+
+        vector2s = new Vector2[]
+        {
+            new Vector2(0,1),
+            new Vector2(1,4),
+            new Vector2(1, 0),
+            new Vector2(-1, 0),
+            new Vector2(-1, 4)
+        };
+
+        UpdateLine(vector2s);
     }
 
     void Update()
@@ -117,6 +137,80 @@ public class PointClick : MonoBehaviour
 
     private void UpdateLine(Vector2[] list)
     {
-        
+        Vector3[] extremePoints = Vector2ToVector3(GetExtremePoint(list));
+
+        line.positionCount = extremePoints.Length;
+        line.SetPositions(extremePoints);
+        line.loop = true;
+    }
+
+    private Vector2[] GetExtremePoint(Vector2[] list)
+    {
+        List<Vector2> result = new List<Vector2>(list);
+
+        for (int i = 0; i < list.Length - 2; i++)
+        {
+            for (int j = i + 1; j < list.Length - 1; j++)
+            {
+                for (int k = j + 1; k < list.Length; k++)
+                {
+                    Vector2 pi = list[i];
+                    Vector2 pj = list[j];
+                    Vector2 pk = list[k];
+
+                    for (int s = result.Count - 1; s >= 0; s--)
+                    {
+                        Vector2 ps = result[s];
+
+                        if (ps.Equals(pi) || ps.Equals(pj) || ps.Equals(pk))
+                        {
+                            continue;
+                        }
+
+                        var triangle = new Vector2[] { pi, pj, pk };
+
+                        if (isPointInTriangle(ps, triangle))
+                        {
+                            result.RemoveAt(s);
+                        }
+                    }
+                }
+            }
+        }
+
+        return result.ToArray();
+    }
+
+    private bool isPointInTriangle(Vector2 s, Vector2[] triangle)
+    {
+        bool a = toLeftTest(triangle[0], triangle[1], s);
+        bool b = toLeftTest(triangle[1], triangle[2], s);
+        bool c = toLeftTest(triangle[2], triangle[0], s);
+
+        return (a == b && b == c);
+    }
+
+    private bool toLeftTest(Vector2 p1, Vector2 p2, Vector2 s)
+    {
+        return area2(p1, p2, s) > 0;
+    }
+
+    private float area2(Vector2 p1, Vector2 p2, Vector2 p3)
+    {
+        return p1.x * p2.y - p1.y * p2.x
+            + p2.x * p3.y - p2.y * p3.x
+            + p3.x * p1.y - p3.y * p1.x;
+    }
+
+    private Vector3[] Vector2ToVector3(Vector2[] list)
+    {
+        Vector3[] vector3s = new Vector3[list.Length];
+
+        for (int i = 0; i < list.Length; i++)
+        {
+            vector3s[i] = list[i];
+        }
+
+        return vector3s;
     }
 }
