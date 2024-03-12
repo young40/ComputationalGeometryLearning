@@ -76,6 +76,12 @@ public class PointClick : MonoBehaviour
 
             if (hit.collider == null)
             {
+                if (Input.mousePosition.x < 0 || Input.mousePosition.y < 0 ||
+                    Input.mousePosition.x > Screen.width || Input.mousePosition.y > Screen.height)
+                {
+                    return;
+                }
+
                 var go = Instantiate(pointPrefab, pointParent.transform);
                 var pos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
                 pos.z = 0;
