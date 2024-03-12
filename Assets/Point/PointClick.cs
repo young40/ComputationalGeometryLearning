@@ -55,7 +55,8 @@ public class PointClick : MonoBehaviour
             new Vector2(-1, 4)
         };
 
-        UpdateLine(vector2s);
+        ReDrawPoints(vector2s);
+        //UpdateLine(vector2s);
     }
 
     void Update()
@@ -91,6 +92,19 @@ public class PointClick : MonoBehaviour
                 }
             }
         }
+    }
+
+    private void ReDrawPoints(Vector2[] points)
+    {
+        foreach (var point in points)
+        {
+            var go = Instantiate(pointPrefab, pointParent.transform);
+            Vector3 pos = point;
+            pos.z = 0;
+            go.transform.localPosition = pos;
+        }
+
+        isDirty = true;
     }
 
     private void UpdatePoints()
