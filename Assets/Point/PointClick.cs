@@ -137,6 +137,11 @@ public class PointClick : MonoBehaviour
 
     private void UpdateLine(Vector2[] list)
     {
+        if (list.Length <= 2)
+        {
+            return;
+        }
+
         Vector3[] extremePoints = Vector2ToVector3(GetExtremePoint(list));
 
         line.positionCount = extremePoints.Length;
@@ -178,7 +183,72 @@ public class PointClick : MonoBehaviour
             }
         }
 
-        return result.ToArray();
+        return SortExtremePoints(result.ToArray());
+    }
+
+    private Vector2[] SortExtremePoints(Vector2[] list)
+    {
+        List<Vector2> rs = new List<Vector2>();
+
+        List<Vector2> array = new List<Vector2>(list);
+
+        var startPoint = array[0];
+        rs.Add(startPoint);
+        array.RemoveAt(0);
+
+        int selectA = 0;
+        float angle = float.MaxValue;
+
+        for (int i = 0; i < array.Count - 1; i++)
+        {
+            for (int j = i + 1; j < array.Count; j++)
+            {
+                var va = array[i];
+                var vb = array[j];
+
+                float c = Vector2.Dot(va - startPoint, vb - startPoint);
+                c = c / ((va - startPoint).magnitude * (vb - startPoint).magnitude);
+
+                if (c < angle)
+                {
+                    angle = c;
+                    selectA = i;
+                }
+            }
+        }
+
+        var currentPoint = array[selectA];
+        rs.Add(currentPoint);
+        array.RemoveAt(selectA);
+
+        while (array.Count > 0)
+        {
+            int pop = 0;
+
+            var v1 = startPoint - currentPoint;
+            float min = float.MaxValue;
+
+            for (int i = 0; i < array.Count; i++)
+            {
+                var vp = array[i] - currentPoint;
+
+                var vc = Vector2.Dot(vp, v1);
+                vc = vc / (vp.magnitude * v1.magnitude);
+
+                if (vc < min)
+                {
+                    min = vc;
+                    pop = i;
+                }
+            }
+
+            startPoint = currentPoint;
+            currentPoint = array[pop];
+            rs.Add(currentPoint);
+            array.RemoveAt(pop);
+        }
+
+        return rs.ToArray();
     }
 
     private bool isPointInTriangle(Vector2 s, Vector2[] triangle)
