@@ -156,7 +156,7 @@ public class PointClick : MonoBehaviour
             return;
         }
 
-        Vector3[] extremePoints = Vector2ToVector3(GetExtremePoint(list));
+        Vector3[] extremePoints = Vector2ToVector3(GetExtremePointByExtremeEdge(list));
 
         line.positionCount = extremePoints.Length;
         line.SetPositions(extremePoints);
@@ -192,6 +192,75 @@ public class PointClick : MonoBehaviour
                         {
                             result.RemoveAt(s);
                         }
+                    }
+                }
+            }
+        }
+
+        return SortExtremePoints(result.ToArray());
+    }
+
+    private Vector2[] GetExtremePointByExtremeEdge(Vector2[] list)
+    {
+        List<Vector2> result = new List<Vector2>();
+
+        for (int i = 0; i < list.Length - 1; i++)
+        {
+            for (int j = i + 1; j < list.Length; j++)
+            {
+                var p = list[j];
+                var q = list[i];
+
+                var hasLeft = false;
+                var hasRight = false;
+
+                foreach (var s in list)
+                {
+                    if (p.Equals(s) || q.Equals(s))
+                    {
+                        continue;
+                    }
+
+                    var rs = toLeftTest(p, q, s);
+                    if (!hasLeft && rs)
+                    {
+                        hasLeft = rs;
+                    }
+                    if (!hasRight && !rs)
+                    {
+                        hasRight = !rs;
+                    }
+
+                    if (hasLeft && hasRight)
+                    {
+                        break;
+                    }
+                }
+
+                if (hasLeft == !hasRight)
+                {
+                    bool hasQ = false;
+                    bool hasP = false;
+
+                    foreach (var r in result)
+                    {
+                        if (r.Equals(q))
+                        {
+                            hasQ = true;
+                        }
+                        if (r.Equals(p))
+                        {
+                            hasP = true;
+                        }
+                    }
+
+                    if (!hasP)
+                    {
+                        result.Add(p);
+                    }
+                    if (!hasQ)
+                    {
+                        result.Add(q);
                     }
                 }
             }
