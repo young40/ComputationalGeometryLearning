@@ -424,7 +424,8 @@ public class PointClick : MonoBehaviour
             int selectIndex = 0;
             for (int i = 1; i < list.Count; i++)
             {
-                if (endPoint.Equals(currentPoint) || IsCountClockWise(currentPoint, endPoint, list[i]) < 0)
+                //if (endPoint.Equals(currentPoint) || IsCountClockWise(currentPoint, endPoint, list[i]) < 0) // or use this line
+                if (endPoint.Equals(currentPoint) || toLeftTest(currentPoint, list[i], endPoint))
                 {
                     endPoint = list[i];
                     selectIndex = i;
