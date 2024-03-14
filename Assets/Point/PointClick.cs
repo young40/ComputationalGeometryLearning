@@ -174,7 +174,7 @@ public class PointClick : MonoBehaviour
             return;
         }
 
-        Vector3[] extremePoints = Vector2ToVector3(GetExtremePointByJarvisMatch(list));
+        Vector3[] extremePoints = Vector2ToVector3(GetExtremePointByGraham(list));
 
         line.positionCount = extremePoints.Length;
         line.SetPositions(extremePoints);
@@ -443,5 +443,37 @@ public class PointClick : MonoBehaviour
     private float IsCountClockWise(Vector2 p, Vector2 q, Vector2 s)
     {
         return (q.x - p.x) * (s.y - q.y) - (q.y - p.y) * (s.x - q.x);
+    }
+
+    private Vector2[] GetExtremePointByGraham(Vector2[] points)
+    {
+        int startIndex = GetLowestThenLeftPointIndex(points);
+
+        Vector2 startPoint = points[startIndex];
+        Vector2 rigthVector = Vector2.right;
+
+        List<Vector2> list = new List<Vector2>(points);
+        list.RemoveAt(startIndex);
+
+        list = list.OrderBy(p => Vector2.Dot(p.normalized, rigthVector)).ToList();
+
+        Stack<Vector2> stack = new Stack<Vector2>(list);
+        stack.Push(startPoint);
+
+        for (int i = 0; i < list.Count; i++)
+        {
+            if (stack.Count < 2)
+            {
+                stack.Push(list[i]);
+                continue;
+            }
+
+            while (stack.Count > 0)
+            {
+
+            }
+        }
+
+        return list.ToArray();
     }
 }
