@@ -372,4 +372,27 @@ public class PointClick : MonoBehaviour
 
         return vector3s;
     }
+
+    // aka LTL
+    private int GetLowestThenLeftPointIndex(Vector2[] points)
+    {
+        int index = 0;
+        float value = float.MaxValue;
+
+        for (int i = 0; i < points.Length; i++)
+        {
+            if (points[i].y < value)
+            {
+                value = points[i].y;
+                index = i;
+            }
+            else if ((points[i].y - value > -float.Epsilon) && (points[i].y - value < float.Epsilon))
+            {
+
+                index = points[i].x < points[index].x ? i : index;
+            }
+        }
+
+        return index;
+    }
 }
