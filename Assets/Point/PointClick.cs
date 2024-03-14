@@ -373,7 +373,7 @@ public class PointClick : MonoBehaviour
         return vector3s;
     }
 
-    // aka LTL
+    // aka LTL Lowest-Then-Left
     private int GetLowestThenLeftPointIndex(Vector2[] points)
     {
         int index = 0;
