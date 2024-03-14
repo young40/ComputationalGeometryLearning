@@ -55,6 +55,17 @@ public class PointClick : MonoBehaviour
             new Vector2(-1, 4)
         };
 
+        vector2s = new Vector2[]
+        {
+            new Vector2(0, 0),
+            new Vector2(1, 5),
+            new Vector2(2, 5),
+            new Vector2(3, 4),
+            new Vector2(1, 1),
+            new Vector2(2, 2),
+            new Vector2(6, 2.7f)
+        };
+
         ReDrawPoints(vector2s);
         //UpdateLine(vector2s);
     }
@@ -69,6 +80,12 @@ public class PointClick : MonoBehaviour
 
         if (Input.GetMouseButtonDown(0))
         {
+            if (Input.mousePosition.x < 0 || Input.mousePosition.y < 0 ||
+                Input.mousePosition.x > Screen.width || Input.mousePosition.y > Screen.height)
+            {
+                return;
+            }
+
             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
             RaycastHit hit;
 
@@ -76,12 +93,6 @@ public class PointClick : MonoBehaviour
 
             if (hit.collider == null)
             {
-                if (Input.mousePosition.x < 0 || Input.mousePosition.y < 0 ||
-                    Input.mousePosition.x > Screen.width || Input.mousePosition.y > Screen.height)
-                {
-                    return;
-                }
-
                 var go = Instantiate(pointPrefab, pointParent.transform);
                 var pos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
                 pos.z = 0;
@@ -159,10 +170,11 @@ public class PointClick : MonoBehaviour
     {
         if (list.Length <= 2)
         {
+            line.positionCount = 0;
             return;
         }
 
-        Vector3[] extremePoints = Vector2ToVector3(GetExtremePointByExtremeEdge(list));
+        Vector3[] extremePoints = Vector2ToVector3(GetExtremePointByJarvisMatch(list));
 
         line.positionCount = extremePoints.Length;
         line.SetPositions(extremePoints);
@@ -373,26 +385,86 @@ public class PointClick : MonoBehaviour
         return vector3s;
     }
 
-    // aka LTL Lowest-Then-Left
+    // aka LTL Lowest-Then-Leftmost
     private int GetLowestThenLeftPointIndex(Vector2[] points)
     {
-        int index = 0;
-        float value = float.MaxValue;
+        int ltl = 0;
 
         for (int i = 0; i < points.Length; i++)
         {
-            if (points[i].y < value)
+            if ((points[i].y < points[ltl].y) ||
+                ((points[i].y - points[ltl].y > -float.Epsilon) && (points[i].y - points[ltl].y < float.Epsilon)
+                && (points[i].x < points[ltl].x)))
             {
-                value = points[i].y;
-                index = i;
-            }
-            else if ((points[i].y - value > -float.Epsilon) && (points[i].y - value < float.Epsilon))
-            {
-
-                index = points[i].x < points[index].x ? i : index;
+                ltl = i;
             }
         }
 
-        return index;
+        return ltl;
+    }
+
+    private Vector2[] GetExtremePointByJarvisMatch(Vector2[] points)
+    {
+        List<Vector2> list = new List<Vector2>(points);
+        List<Vector2> result = new List<Vector2>();
+
+        {
+            int start = GetLowestThenLeftPointIndex(points);
+
+            result.Add(list[start]);
+            list.RemoveAt(start);
+        }
+
+        {
+            result.Add(list[0]);
+            list.RemoveAt(0);
+        }
+
+        while (list.Count > 0)
+        {
+            int i = 0;
+            float v = IsCountClockWise(result[result.Count - 2], list[i], result[result.Count - 1]);
+            if (v > 0)
+            {
+                list.Add(result[result.Count - 1]);
+                result.RemoveAt(result.Count - 1);
+
+                result.Add(list[i]);
+                list.RemoveAt(i);
+                break;
+            }
+            else if (v > -float.Epsilon && v < float.Epsilon)
+            {
+                bool newFar = (list[i] - result[result.Count - 2]).sqrMagnitude > (result[result.Count - 1] - result[result.Count - 2]).sqrMagnitude;
+
+                if (newFar)
+                {
+                    result.Add(list[i]);
+                    list.RemoveAt(i);
+                }
+                else
+                {
+                    var temp = result[result.Count - 1];
+                    result.RemoveAt(result.Count - 1);
+
+                    result.Add(list[i]);
+                    list.RemoveAt(i);
+
+                    result.Add(temp);
+                }
+            }
+            else
+            {
+                result.Add(list[i]);
+                list.RemoveAt(i);
+            }
+        }
+
+        return result.ToArray();
+    }
+
+    private float IsCountClockWise(Vector2 p, Vector2 q, Vector2 s)
+    {
+        return (q.x - p.x) * (s.y - q.y) - (q.y - p.y) * (s.x - q.x);
     }
 }
