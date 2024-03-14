@@ -408,57 +408,33 @@ public class PointClick : MonoBehaviour
         List<Vector2> list = new List<Vector2>(points);
         List<Vector2> result = new List<Vector2>();
 
+        Vector2 currentPoint, ltlPoint;
         {
             int start = GetLowestThenLeftPointIndex(points);
 
-            result.Add(list[start]);
-            list.RemoveAt(start);
+            currentPoint = points[start];
+            ltlPoint = currentPoint;
         }
 
+        do
         {
-            result.Add(list[0]);
-            list.RemoveAt(0);
-        }
+            result.Add(currentPoint);
+            Vector2 endPoint = list[0];
 
-        while (list.Count > 0)
-        {
-            int i = 0;
-            float v = IsCountClockWise(result[result.Count - 2], list[i], result[result.Count - 1]);
-            if (v > 0)
+            int selectIndex = 0;
+            for (int i = 1; i < list.Count; i++)
             {
-                list.Add(result[result.Count - 1]);
-                result.RemoveAt(result.Count - 1);
-
-                result.Add(list[i]);
-                list.RemoveAt(i);
-                break;
-            }
-            else if (v > -float.Epsilon && v < float.Epsilon)
-            {
-                bool newFar = (list[i] - result[result.Count - 2]).sqrMagnitude > (result[result.Count - 1] - result[result.Count - 2]).sqrMagnitude;
-
-                if (newFar)
+                if (endPoint.Equals(currentPoint) || IsCountClockWise(currentPoint, endPoint, list[i]) < 0)
                 {
-                    result.Add(list[i]);
-                    list.RemoveAt(i);
-                }
-                else
-                {
-                    var temp = result[result.Count - 1];
-                    result.RemoveAt(result.Count - 1);
-
-                    result.Add(list[i]);
-                    list.RemoveAt(i);
-
-                    result.Add(temp);
+                    endPoint = list[i];
+                    selectIndex = i;
                 }
             }
-            else
-            {
-                result.Add(list[i]);
-                list.RemoveAt(i);
-            }
+
+            currentPoint = endPoint;
+            list.RemoveAt(selectIndex);
         }
+        while (!currentPoint.Equals(ltlPoint));
 
         return result.ToArray();
     }
