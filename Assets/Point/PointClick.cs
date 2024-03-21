@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
@@ -38,6 +39,21 @@ public class PointClick : MonoBehaviour
         var go = Instantiate(linePrefab);
         line = go.GetComponent<LineRenderer>();
 
+        /*
+        {
+            var b = Vector3.zero;
+            var a = new Vector3(1, 0);
+
+            Debug.Log(area2(b, a, new Vector3(1, 1)));
+            Debug.Log(area2(b, a, new Vector3(2, 2)));
+            Debug.Log(area2(b, a, new Vector3(1, 2)));
+            Debug.Log(area2(b, a, new Vector3(-1, 1)));
+            Debug.Log(area2(b, a, new Vector3(-1, -1)));
+            Debug.Log(area2(b, a, new Vector3(1, -1)));
+        }
+
+        Debug.Log("xxx");*/
+
         Vector2[] vector2s = new Vector2[]
         {
             new Vector2 (0,0),
@@ -64,6 +80,34 @@ public class PointClick : MonoBehaviour
             new Vector2(1, 1),
             new Vector2(2, 2),
             new Vector2(6, 2.7f)
+        };
+
+
+        vector2s = new Vector2[]
+        {
+            new Vector2(0, 0),
+            new Vector2(1, 1),
+            new Vector2(1, 2),
+            new Vector2(1, 3),
+            new Vector2(1, 4),
+            new Vector2(1, 5),
+            new Vector2(1, 6),
+        };
+        vector2s = new Vector2[]
+        {
+            new Vector2(0, 0),
+            new Vector2(1, 0),
+            new Vector2(2, 1),
+            new Vector2(3, 4),
+            new Vector2(4, 5),
+        };
+
+        vector2s = new Vector2[]
+        {
+            new Vector2(0, 0),
+            new Vector2(1, 0),
+            new Vector2(2, 1),
+            new Vector2(3, 2),
         };
 
         ReDrawPoints(vector2s);
@@ -95,6 +139,8 @@ public class PointClick : MonoBehaviour
             {
                 var go = Instantiate(pointPrefab, pointParent.transform);
                 var pos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+                pos.x = (float)Math.Round(pos.x, 1);
+                pos.y = (float)Math.Round(pos.y, 1);
                 pos.z = 0;
                 go.transform.localPosition = pos;
 
@@ -368,9 +414,11 @@ public class PointClick : MonoBehaviour
 
     private float area2(Vector2 p1, Vector2 p2, Vector2 p3)
     {
-        return p1.x * p2.y - p1.y * p2.x
+        var v = p1.x * p2.y - p1.y * p2.x
             + p2.x * p3.y - p2.y * p3.x
             + p3.x * p1.y - p3.y * p1.x;
+
+        return v;
     }
 
     private Vector3[] Vector2ToVector3(Vector2[] list)
@@ -455,25 +503,67 @@ public class PointClick : MonoBehaviour
         List<Vector2> list = new List<Vector2>(points);
         list.RemoveAt(startIndex);
 
-        list = list.OrderBy(p => Vector2.Dot(p.normalized, rigthVector)).ToList();
+        // cos
+        list = list.OrderBy(p => Vector2.Dot((p - startPoint).normalized, rigthVector)).ToList();
 
-        Stack<Vector2> stack = new Stack<Vector2>(list);
+        Stack<Vector2> stack = new Stack<Vector2>();
         stack.Push(startPoint);
 
-        for (int i = 0; i < list.Count; i++)
+        Stack<Vector2> tt = new Stack<Vector2>();
+
+        foreach (Vector2 p in list)
+        {
+            tt.Push(p);
+        }
+
+        while (tt.Count > 0)
         {
             if (stack.Count < 2)
             {
-                stack.Push(list[i]);
+                stack.Push(tt.Pop());
                 continue;
             }
 
-            while (stack.Count > 0)
-            {
+            var s = tt.Pop();
 
+            var p2 = stack.Pop();
+            var p1 = stack.Pop();
+
+            var area2V = area2(p1, p2, s);
+
+            if (area2V > 0)
+            {
+                stack.Push(p1);
+                stack.Push(p2);
+                stack.Push(s);
+                print("add: " + s);
+            }
+            else if (area2V < 0)
+            {
+                print("drop: " + p2);
+                print("add: " + s);
+                tt.Push(s);
+                stack.Push(p1);
+            }
+            else
+            {
+                // need to test more point in stack make a line????
+                stack.Push(p1);
+                if ((p1 - p2).sqrMagnitude > (p1 - s).sqrMagnitude)
+                {
+                    stack.Push(s);
+                    stack.Push(p2);
+                    print("add: " + s);
+                }
+                else
+                {
+                    stack.Push(p2);
+                    stack.Push(s);
+                    print("add: " + s);
+                }
             }
         }
 
-        return list.ToArray();
+        return stack.ToArray();
     }
 }
